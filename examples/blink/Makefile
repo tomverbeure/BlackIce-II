@@ -13,8 +13,10 @@
 #                                                                             #
 ###############################################################################
 
-chip.bin: chip.v blink.v ../common/blackice-ii.pcf
-	yosys -q -p "synth_ice40 -blif chip.blif" chip.v blink.v
+VERILOG_SRC = chip.v blink.v ../common/sync_reset.v
+
+chip.bin: $(VERILOG_SRC) ../common/blackice-ii.pcf
+	yosys -q -p "synth_ice40 -blif chip.blif" $(VERILOG_SRC)
 	arachne-pnr -d 8k -P tq144:4k -p ../common/blackice-ii.pcf chip.blif -o chip.txt
 	icepack chip.txt chip.bin
 
