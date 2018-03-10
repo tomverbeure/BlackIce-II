@@ -15,42 +15,28 @@
 module chip (
     // 100MHz clock input
     input  clk,
-    // Global internal reset connected to RTS on ch340 and also PMOD[1]
-    input greset,
-    // Input lines from STM32/Done can be used to signal to Ice40 logic
-    input DONE, // could be used as interupt in post programming
-    input DBG1, // Could be used to select coms via STM32 or RPi etc..
-    // SRAM Memory lines
-    output [17:0] ADR,
-    output [15:0] DAT,
-    output RAMOE,
-    output RAMWE,
-    output RAMCS,
-    output RAMLB,
-    output RAMUB,
-    // All PMOD outputs
-    output [55:0] PMOD,
-    input B1,
-    input B2
+    // LED output
+    output [55:52] PMOD
   );
 
-  // SRAM signals are not use in this design, lets set them to default values
-  assign ADR[17:0] = {18{1'bz}};
-  assign DAT[15:0] = {16{1'bz}};
-  assign RAMOE = 1'b1;
-  assign RAMWE = 1'b1;
-  assign RAMCS = 1'b1;
-  assign RAMLB = 1'bz;
-  assign RAMUB = 1'bz;
+  wire reset_;
+  wire reset;
 
+  sync_reset u_global_reset(
+	.clk(clk),
+	.reset_in_(1'b1), 
+	.reset_out_(reset_)
+	);
+  assign reset = !reset_;
 
-  // Set unused pmod pins to default
-  assign PMOD[54:0] = {55{1'bz}};
+  wire led;
 
   blink my_blink (
-    .clk   (clk),
-    .rst (greset),
-    .led (PMOD[55])
+    .clk(clk),
+    .rst(reset),
+    .led(led)
   );
+
+  assign PMOD[55:52] = {4{led}};
 
 endmodule
